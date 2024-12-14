@@ -1,34 +1,118 @@
 # Summon-s-master
 Roll20 api mod to summon creatures
+
 Commands
-All team parts can use dice (1d8) or random tables
+All command arguments can use dice expressions (e.g., 1d8), random tables (e.g., 1t[Table_Name]), or direct values. Commands are designed to work with both GM and player inputs.
 
-!summon --help — General information about the script
+General Commands
+!SM --help
+Displays general information about the script, including commands and usage.
 
-!summon --name|[Creature_name] — Basic command to summon a creature. If the creature's name consists of more than one word, then the whole thing should be written "like this".
+!SM --menu
+Opens the formation menu, where you can manage and summon saved formations.
 
-The following arguments can execute the command above
+!SM --config
+Opens the configuration menu (GM-only), where you can adjust settings like silentDefault, cellSize, and localization.
 
---count|[number or formula] — Default 1. Number of summoned creatures
+Summon Arguments
+--count|[Number or Formula]
+Default: 1. Specifies the number of creatures to summon. Supports dice rolls (e.g., 1d4).
 
---position|[number or formula] — Default is 1d8. Relative to the selected token. Where 0 is the center of the selected token, 1 is north, 2 is northeast and so on clockwise. 
+--position|[Number or Formula]
+Default: 1d8. Specifies the position relative to the reference point:
 
-Note: Jumpgate and Legacy versions of the game have different coordinate systems (at least something like that) and because of this the position placement may not work correctly. For medium creatures, summoning medium tokens works stably.
+0: Center of the reference token.
+1-8: Cardinal directions, where 1 is north, 2 is northeast, and so on clockwise.
+Supports dice rolls and manual input.
+--radius|[Number or Formula]
+Specifies the summoning radius (in feet) around the reference token. Used when position is not specified.
+--size|[F/D/T/S/M/L/H/G/C/Number or Formula]
+Default: M (Medium). Specifies the creature's size:
 
---size|[F/D/T/S/M/L/H/G/C/number/formula] — Default is M. Can use formulas with dice, number will be converted to a size code. F= Fine, D = Diminutive, T= Tiny, L = large, H = Huge, G = Gargantuan, C = Colossal.
+F: Fine
+D: Diminutive
+T: Tiny
+S: Small
+M: Medium
+L: Large
+H: Huge
+G: Gargantuan
+C: Colossal
+Alternatively, use a number (e.g., 2) or dice formula (e.g., 1d6), which will be converted to a size code.
+--silent
+Disables the summoning message and sound effects.
 
---silent — Disables the summoning message.
+--sound|[Sound_Name]
+Plays a sound effect when the summoning is complete. Ignored if --silent is active.
 
---ids|[token_id] — Use token ID as reference point. The easiest way to get a token id — --ids @{target|Select a target|token_id}. This option is needed if it is necessary to summon a token next to a token that the Players do not control and cannot select.
+--ids|[Token_ID]
+Uses a specific token ID as the reference point. Example: --ids @{target|Select a target|token_id}. Useful when the summoning point is a token the player cannot control.
 
+--sel
+Uses the currently selected token as the reference point for the summoning.
 
---sel — Use selected token as reference point.
+Example Commands
+Random Monsters with Random Position and Size
+
+css
+Копировать код
+!SM --summon name|"1t[Random-Monsters]" --count|1d4 --position|1d8 --size|1d6
+Summons 1d4 random monsters with random positions and sizes.
+Silent Summoning of a Large Pet Dragon
+
+css
+Копировать код
+!SM --summon name|"Pet Dragon" --size|L --position|?{Number position?} --silent
+Summons one large pet dragon, with a position chosen by the user and no announcement.
+Summoning Around a Token by ID
+
+scss
+Копировать код
+!SM --summon name|"Guard" --count|4 --radius|30 --ids @{target|Token|token_id}
+Summons 4 guards in a 30-foot radius around a selected token.
+Group Summoning
+!SM --group|[Formation_Name]
+Summons a pre-saved formation by name.
+
+Saving Formations Add --save|[Formation_Name] to any --summon command to save it as a formation. Saved formations can be accessed via the --menu or --group commands.
 
 Example:
-!summon --name|"1t[Random-Monster]" --count|1d4 --position|1d8 --size|1d6
 
-— Summons 1d4 random monsters, with random position and size.
+css
+Копировать код
+!SM --summon name|"Skeleton" --count|5 --radius|20 --save|SkeletonGroup
+Saves this summoning setup as "SkeletonGroup".
+Configuration
+Accessible via !SM --config (GM-only).
 
-!summon --name|"Pet dragon" --size|L --position|?{Number position?} --silent 
+Settings:
+Silent Mode (silentDefault)
 
-— Summons one large pet dragon with the ability to choose the direction in which it will be summoned.
+Enable or disable silent mode by default:
+arduino
+Копировать код
+!SM --config --silentDefault|true
+!SM --config --silentDefault|false
+Cell Size (cellSize)
+
+Set the grid cell size (default: 70 pixels):
+arduino
+Копировать код
+!SM --config --cellSize|?{Enter new cell size|70}
+Localization (locale)
+
+Switch between Russian (ru) and English (en):
+css
+Копировать код
+!SM --config --locale|ru
+!SM --config --locale|en
+Formation Menu
+Accessible via !SM --menu.
+
+Lists all saved formations with the following options:
+Summon: Quickly summon the formation.
+Edit: Update the formation's command.
+Delete: Remove the formation.
+Add New Formation: Save a new formation.
+Error Handling
+All errors (e.g., invalid commands, no free space) are displayed in styled messages, based on the current localization.
